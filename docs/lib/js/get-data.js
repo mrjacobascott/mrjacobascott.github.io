@@ -73,41 +73,60 @@ function displayObservation(obs) {
   INR.innerHTML = obs.sys;
   Sodium.innerHTML = obs.dia;
 }
+function getValue(bili, creat, inr, sod){
+  //alert(bili + " " + creat + " " + inr);
+  if (bili != "" && bili < 1.0) {
+    bili = '1.0';
+  } else if (bili != ""){
+    bili = bilinum;
+  } else {
+    bili = "undefined";
+  }
 
-function randomValue(){
-  var randbili = Math.floor(Math.random() * (50 - 1) + 1);
-  var randcreat = Math.floor(Math.random() * (4 - 1) + 1);
-  var randinr = Math.floor(Math.random() * (4 - 1) + 1);
-  var randsod = Math.floor(Math.random() * (137 - 125) + 125);
-  document.getElementById('bilirubin').innerHTML = randbili;
-  document.getElementById('creatinine').innerHTML = randcreat;
-  document.getElementById('INR').innerHTML = randinr;
-  document.getElementById('Sodium').innerHTML = randsod;
-  
-  var meld = Math.round(0.957*Math.log(randcreat)+0.378*Math.log(randbili)+1.120*Math.log(randinr)+0.643)*10;    
-  if (meld > 11){
-    meld = Math.round(meld+1.32*(137-randsod)-(0.033*meld*(137-randsod)));
+  if (creat != "" && creat < 1.0) {
+    creat = 1.0;
+  } else if (creat != "" && creat > 4.0){
+    creat = 4.0;
+  } else if (creat != "" ){
+    creat = creat;
+  } else {
+    creat = "undefined";
+  }
+
+  if (inr != "" && inr < 1.0) {
+    inr = 1.0;
+  } else if (inr != ""){
+    inr = inr;
+  } else {
+    inr = "undefined";
+  }
+
+  if (sod != "" && sod < 125) {
+    sod = 125;
+  } else if (sod != "" && sod > 137){
+    sod = 137;
+  } else if (sod != ""){
+    sod = sod;
+  } else {
+    sod = "undefined";
+  }
+
+  if (inr == "undefined" || creat == "undefined" || bili == "undefined"){
+    var meld = 0;
+  } else{
+    var meld = Math.round(0.957*Math.log(creat)+0.378*Math.log(bili)+1.120*Math.log(inr)+0.643)*10;
+  }
+
+  if (meld > 11 && sod != "undefined"){
+    meld = Math.round(meld+1.32*(137-sod)-(0.033*meld*(137-sod)));
       if (meld > 40){
         meld = 40;
       }
+  } else if (meld > 11){
+    meld = 0;
   }
-  var mort = 0;
-  if (meld == 0){
-    mort = "0";
-  }else if (meld < 10){
-    mort = "1.9%";
-  }else if (meld < 20){
-    mort = "6.0%";
-  }else if (meld < 30){
-    mort = "19.6%";
-  }else if (meld < 40){
-    mort = "52.6%";
-  }else{
-    mort = "71.3%";
-  }
-
-  document.getElementById('Meld').innerHTML = meld;
-  document.getElementById('Mortality').innerHTML = mort;
+  //alert("meld " + meld);
+  return meld;
 }
 
 //once fhir client is authorized then the following functions can be executed
@@ -124,25 +143,22 @@ FHIR.oauth2.ready().then(function(client) {
   var query = new URLSearchParams();
 
   query.set("patient", client.patient.id);
-  query.set("_count", 100);
+  query.set("_count", 1000);
   query.set("_sort", "-date");
   query.set("code", [
-    //'http://loinc.org|42719-5',
-    //'http://loinc.org|14682-9',
-    //'http://loinc.org|46418-0',
-    //'http://loinc.org|2947-0',
-
     'http://loinc.org|1975-2', // bilirubin
     'http://loinc.org|2160-0', // creatininine
     'http://loinc.org|38483-4', // creatininine
     'http://loinc.org|34714-6', //INR
+    'http://loinc.org|6301-6', //INR
+    'http://loinc.org|92891-1', //INR
     'http://loinc.org|2951-2', // Sodium
     'http://loinc.org|2947-0', // sodium
 
   ].join(","));
 
   client.request("Observation?" + query, {
-    pageLimit: 0,
+    pageLimit: 5,
     flat: true
   }).then(
     function(ob) {
@@ -150,7 +166,7 @@ FHIR.oauth2.ready().then(function(client) {
       var byCodes = client.byCodes(ob, 'code');
       var bili = byCodes('1975-2');
       var creat = byCodes('2160-0');
-      var inr = byCodes('34714-6');
+      var inr = byCodes('6301-6');
       var Sod = byCodes('2951-2');
       
       
@@ -161,7 +177,13 @@ FHIR.oauth2.ready().then(function(client) {
       if (Sod == ""){
         Sod = byCodes('2947-0');
       }
+      //if (inr = ""){
+      //  inr = byCodes('46418-0');
+      //}
 
+      //if (inr = ""){
+      //  inr = byCodes('34714-6');
+      //}
       var bilirubin = getQuantityValueAndUnit(bili[0]);
       var creatinine = getQuantityValueAndUnit(creat[0]);
       var INR = getQuantityValueAndUnit(inr[0]);
@@ -172,106 +194,95 @@ FHIR.oauth2.ready().then(function(client) {
       var INRnum = getQuantityValue(inr[0]);
       var sodinum = getQuantityValue(Sod[0]);
 
-      // create patient object
-      var p = defaultPatient();
-
-      // set patient value parameters to the data pulled from the observation resoruce
-      if (typeof bilinum != 'undefined' && bilinum < 1.0) {
-        p.bilirubin = '1.0';
-      } else if (typeof bilirubin != 'undefined'){
-        p.bilirubin = bilinum;
-      } else {
-        p.bilirubin = 'undefined';
-      }
-
-      if (typeof creatinine != 'undefined' && creanum < 1.0) {
-        p.creatinine = 1.0;
-      } else if (typeof creatinine != 'undefined' && creanum > 4.0){
-        p.creatinine = 4.0;
-      } else if (typeof creatinine != 'undefined'){
-        p.creatinine = creanum;
-      } else {
-        p.creatinine = 'undefined';
-      }
-
-      if (typeof INR != 'undefined' && INRnum < 1.0) {
-        p.INR = 1.0;
-      } else if (typeof INR != 'undefined'){
-        p.INR = INRnum;
-      } else {
-        p.INR = 'undefined';
-      }
-
-      if (typeof Sodium != 'undefined' && sodinum < 125) {
-        p.Sodium = 125;
-      } else if (typeof Sodium != 'undefined' && sodinum > 137){
-        p.Sodium = 137;
-      } else if (typeof Sodium != 'undefined'){
-        p.Sodium = sodinum;
-      } else {
-        p.Sodium = 'undefined';
-      }
-
-      //TEST DATA
-      //p.bilirubin = 10000;
-      //p.creatinine = 10000;
-      //p.INR = 10000;
-      //p.Sodium = 125;
-      //p.Meld = 0;
-      if (typeof INR == 'undefined' || typeof creatinine == 'undefined' || typeof bilirubin == 'undefined'){
-      //if (1==0){
-        p.Meld = 'undefined';
-      } else{
-        p.Meld = Math.round(0.957*Math.log(p.creatinine)+0.378*Math.log(p.bilirubin)+1.120*Math.log(p.INR)+0.643)*10;
-      }
-
-      if (p.Meld > 11){
-        if (typeof Sodium == 'undefined'){
-          p.Meld = 'undefined'
-        }else {
-          p.Meld = Math.round(p.Meld+1.32*(137-p.Sodium)-(0.033*p.Meld*(137-p.Sodium)));
-          if (p.Meld > 40){
-            p.Meld = 40;
-          }
+      var creatDict = {} 
+      var encounters = {}
+       
+      for (meas in creat){
+        measure = creat[meas].encounter.reference.substring(10);
+        if (measure in encounters) {
+          
+        } else {
+          encounters[measure] = {"edate": "","creat": "", "bili" : "", "inr" : "", "Sod" : ""};;
+          encounters[measure]["edate"] = (creat[meas].effectiveDateTime.substring(0,10));
         }
+        creatDict[creat[meas].effectiveDateTime.substring(0,10)] = getQuantityValue(creat[meas]);
+        encounters[measure]["creat"] =  getQuantityValue(creat[meas]);
       }
 
-      if (p.Meld == 'undefined'){
-        p.Mortality = 'undefined';
-      }else if (p.Meld == 0){
-        p.Mortality = "0";
-      }else if (p.Meld < 10){
-        p.Mortality = "1.9%";
-      }else if (p.Meld < 20){
-        p.Mortality = "6.0%";
-      }else if (p.Meld < 30){
-        p.Mortality = "19.6%";
-      }else if (p.Meld < 40){
-        p.Mortality = "52.6%";
-      }else{
-        p.Mortality = "71.3%";
+      var biliDict = {}
+      for (meas in bili){
+        measure = bili[meas].encounter.reference.substring(10);
+        if (measure in encounters) {
+          
+        } else {
+          encounters[measure] = {"edate": "","creat": "", "bili" : "", "inr" : "", "Sod" : ""};;
+          encounters[measure]["edate"] = (bili[meas].effectiveDateTime.substring(0,10));
+        }
+        biliDict[bili[meas].effectiveDateTime.substring(0,10)] = getQuantityValue(bili[meas]);
+        encounters[measure]["bili"] =  getQuantityValue(bili[meas]);
       }
 
-      document.getElementById('bilirubin').innerHTML = p.bilirubin;
-      document.getElementById('creatinine').innerHTML= p.creatinine;
-      document.getElementById('INR').innerHTML = p.INR;
-      document.getElementById('Sodium').innerHTML = p.Sodium;
-      document.getElementById('Meld').innerHTML = p.Meld;
-      document.getElementById('Mortality').innerHTML = p.Mortality;
-      document.getElementById('bilirubinactual').innerHTML = bilirubin;
-      document.getElementById('creatinineactual').innerHTML= creatinine;
-      document.getElementById('INRactual').innerHTML = INR;
-      document.getElementById('Sodiumactual').innerHTML = Sodium;
-      if(p.Meld == 'undefined'){
-        alert("At least one piece of required data not found in patients EHR :( \nUse Randomize! button to test functionality.");
+      var inrDict = {}
+      for (meas in inr){
+        measure = inr[meas].encounter.reference.substring(10);
+        if (measure in encounters) {
+          
+        } else {
+          encounters[measure] = {"edate": "","creat": "", "bili" : "", "inr" : "", "Sod" : ""};;
+          encounters[measure]["edate"] = (inr[meas].effectiveDateTime.substring(0,10));
+        }
+        inrDict[inr[meas].effectiveDateTime.substring(0,10)] = getQuantityValue(inr[meas]);
+        encounters[measure]["inr"] =  getQuantityValue(inr[meas]);
+      }
+
+      var SodDict = {}
+      for (meas in Sod){
+        measure = Sod[meas].encounter.reference.substring(10);
+        if (measure in encounters) {
+          
+        } else {
+          encounters[measure] = {"edate": "","creat": "", "bili" : "", "inr" : "", "Sod" : ""};;
+          encounters[measure]["edate"] = (Sod[meas].effectiveDateTime.substring(0,10));
+        }
+        SodDict[Sod[meas].effectiveDateTime.substring(0,10)] = getQuantityValue(Sod[meas]);
+        encounters[measure]["Sod"] =  getQuantityValue(Sod[meas]);
+      }
+
+      var table = document.getElementById("meastable")
+
+      for (enc in encounters){
+        //alert(enc);
+        var row= document.createElement("tr");
+
+        var mdate = document.createElement("td");
+        var bildata = document.createElement("td");
+        var creatdata = document.createElement("td"); 
+        var inrdata = document.createElement("td");
+        var sodidata = document.createElement("td");
+        var melddata = document.createElement("td"); 
+
+        sstring = "<input type=\"text\" size=\"7.5\" oninput = \"update(this, this.value)\" value=\""
+        estring = "\"/>"
+        mdate.innerHTML = sstring + encounters[enc]["edate"] + estring;
+        bildata.innerHTML = sstring + encounters[enc]["bili"] + estring;
+        creatdata.innerHTML = sstring + encounters[enc]["creat"] + estring;
+        inrdata.innerHTML = sstring + encounters[enc]["inr"] + estring;
+        sodidata.innerHTML = sstring + encounters[enc]["Sod"] + estring;
+        meldvalue = getValue(encounters[enc]["bili"], encounters[enc]["creat"], encounters[enc]["inr"], encounters[enc]["Sod"]);
+        melddata.innerHTML = sstring + meldvalue + estring;
+
+        row.appendChild(mdate);
+        row.appendChild(bildata);
+        row.appendChild(creatdata);
+        row.appendChild(inrdata);
+        row.appendChild(sodidata);
+        row.appendChild(melddata);
+
+        table.children[0].appendChild(row);
+      }
+
+      function update(id, val){
+        id.textContent = val;
       }
     });
-  //event listner when the add button is clicked to call the function that will add the note to the weight observation
- document.getElementById('bilibut').addEventListener('click', randomValue);
-
-
-
-
-
-
 }).catch(console.error);

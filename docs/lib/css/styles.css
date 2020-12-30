@@ -4,6 +4,7 @@ body {
   color: #fff;
   font-family: 'Open Sans', Helvetica, sans-serif;
   box-sizing: border-box;
+  text-align: center;
 }
 
 .banner-value{
@@ -26,13 +27,15 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 0 16px;
-  background-color: #1ea6ff;
+  background-color: #1583cc;
+  text-align: center;
 }
 
 
 .main {
   grid-area: main;
   background-color: #2b4865;
+  text-align: center;
 }
 
 .main-header {
@@ -43,6 +46,7 @@ body {
   height: 150px;
   background-color: #e3e4e6;
   color: slategray;
+  text-align: center;
 }
 
 .main-overview {
@@ -51,20 +55,29 @@ body {
   grid-auto-rows: 94px;
   grid-gap: 20px;
   margin: 20px;
+  text-align: center;
 }
 
 .title{
+  text-align: center;
+  padding-bottom: 10px;
+  font-size: 20px;
+}
+
+.second{
+  text-align: center;
   padding-bottom: 10px;
   font-size: 20px;
 }
 
 .ob-value{
   font-size: 18px;
-
+  text-align: center;
 }
 
 .annotations{
   padding-top: 10px;
+  text-align: center;
 
 }
 
@@ -81,6 +94,7 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(265px, 1fr));
   column-gap: 10px;
   margin: 20px;
+  text-align: center;
 }
 
 /* .big-card {
@@ -101,7 +115,7 @@ body {
   padding: 24px;
   padding-bottom: 24px;
   box-sizing: border-box;
-
+  text-align: center;
 }
 
 .annotation-box {
@@ -111,11 +125,12 @@ body {
   float: left;
   width: 69%;
   background: #f1f1f1;
+  text-align: center;
 }
 
 .annotation-button{
   float: left;
-  width: 20%;
+  width: 100%;
   padding: 10px;
   background: #1ea6ff;
   color: white;
@@ -126,21 +141,22 @@ body {
 }
 
 .slidecontainer {
-  width: 75%;
+  width: 100%;
 }
 
 .slider {
-  -webkit-appearance: none;  /* Override default CSS styles */
+  -webkit-appearance: none; 
   appearance: none;
-  width: 100%; /* Full-width */
-  height: 25px; /* Specified height */
-  background: #d3d3d3; /* Grey background */
-  outline: none; /* Remove outline */
-  opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
-  -webkit-transition: .2s; /* 0.2 seconds transition on hover */
+  width: 100%; 
+  height: 5px; 
+  background: #14f371; 
+  outline: none; 
+  opacity: 0.7; 
+  -webkit-transition: .2s; 
   transition: opacity .2s;
+  text-align: center;
 }
 
 .slider:hover {
-  opacity: 1; /* Fully shown on mouse-over */
+  opacity: 1; 
 }
