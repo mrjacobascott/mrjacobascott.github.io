@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link rel="stylesheet" href="./lib/css/styles.css">
+</head>
+
+<body>
+  <div class="grid-container">
+    <header class="header">
+      <div>
+        MELD Score and 3 Month Mortality Percentage Calculator- Patient Name:
+        <span class="banner-value" id="patient_name">..</span>
+        Gender:
+        <span class="banner-value" id="gender">..</span>
+        DOB:
+        <span class="banner-value" id="dob">..</span>
+      </div>
+    </header>
+
+    <main class="main">
+      <div class="main-overview">
+        <div class="small-card">
+          <div>EHR Bilirubin</div>
+          <div class="ob-value" id="bilirubinactual">..</div>
+        </div>
+        <div class="small-card">
+          <div>EHR Creatinine</div>
+          <div class="ob-value" id="creatinineactual">..</div>
+        </div>
+        <div class="small-card">
+          <div>EHR INR</div>
+          <div class="ob-value" id="INRactual">..</div>
+        </div>
+        <div class="small-card">
+          <div>EHR Sodium</div>
+          <div class="ob-value" id="Sodiumactual">..</div>
+        </div>
+        <div class="small-card">
+          <div></div>
+          <div class="ob-value" id="Meldactual"></div>
+        </div>
+        <div class="small-card">
+          <div></div>
+          <div class="ob-value" id="Mortalityactual"></div>
+        </div>
+        <div class="small-card">
+          <div>Effective Bilirubin (mg/dL)</div>
+          <div class="ob-value" id="bilirubin">..</div>
+        </div>
+        <div class="small-card">
+          <div>Effective Creatinine (mg/dL)</div>
+          <div class="ob-value" id="creatinine">..</div>
+        </div>
+        <div class="small-card">
+          <div>Effective INR (no unit)</div>
+          <div class="ob-value" id="INR">..</div>
+        </div>
+        <div class="small-card">
+          <div>Effective Sodium (mmmol/L)</div>
+          <div class="ob-value" id="Sodium">..</div>
+        </div>
+        <div class="small-card">
+          <div>Calculated MELD Score (0-40)</div>
+          <div class="ob-value" id="Meld">..</div>
+        </div>
+        <div class="small-card">
+          <div>Calculated 3 Month Mortality (%)</div>
+          <div class="ob-value" id="Mortality">..</div>
+        </div>
+      </div>
+
+      <div class="big-card">
+        <div class="card">
+          
+          <div class="title">Test Different Values</div>
+          <div class="slidecontainer">
+            <p>Bilirubin Value (mg/dL): <span id="bilival"></span></p>
+            <input type="range" min="1" max="50" value="2" step="0.5" class="slider" id="bilislider">
+          </div>
+          <script>
+            var slider = document.getElementById("bilislider");
+            var output = document.getElementById("bilival");
+            output.innerHTML = slider.value;
+            slider.oninput = function() {
+              bilival.innerHTML = this.value;
+            }
+          </script>
+        
+          <div class="slidecontainer">
+            <p>INR Value: <span id="inrval"></span></p>
+            <input type="range" min="1" max="50" value="17" step="0.5" class="slider" id="inrslider">
+          </div>
+          <script>
+            var slider = document.getElementById("inrslider");
+            var output = document.getElementById("inrval");
+            output.innerHTML = slider.value;
+            slider.oninput = function() {
+              inrval.innerHTML = this.value;
+            }
+          </script>
+          
+          <div class="slidecontainer">
+            <p>Creatinine Value (mg/dL): <span id="creatval"></span></p>
+            <input type="range" min="1" max="4" value="3" step="0.1" class="slider" id="creatslider">
+          </div>
+          <script>
+            var slider = document.getElementById("creatslider");
+            var output = document.getElementById("creatval");
+            output.innerHTML = slider.value;
+            slider.oninput = function() {
+              creatval.innerHTML = this.value;
+            }
+          </script>
+
+          <div class="slidecontainer">
+            <p>Sodium Value (mmol/L): <span id="sodval"></span></p>
+            <input type="range" min="125" max="137" value="137" step="0.5" class="slider" id="sodslider">
+          </div>
+          <script>
+            var slider = document.getElementById("sodslider");
+            var output = document.getElementById("sodval");
+            output.innerHTML = slider.value;
+            slider.oninput = function() {
+              sodval.innerHTML = this.value;
+              
+            }
+          </script>
+            
+
+          <div class="title">Calculated MELD Score: <span id="meldcalc"></span></div>
+          <div class="title">Calculated Mortality:  <span id="mortcalc"></span></div>
+        </div>
+
+        <!-- NEED TO HAVE THE MELD MORTALITY CALCULATED WHEN SLIDERS CHANGE
+        CAN SEE ABOUT PUTTING THE NEEDED INFO WITHIN EACH HTML FUNCTION-->
+
+
+
+     <div class="card">
+          <div class="title">
+            Retrieves EHR data for Bilirubin, Creatinine, INR, and Sodium.
+          </div>
+          <div class="title">
+            Uses this data to calculate MELD score.
+          </div>
+          <div class="title">
+            Meld Score correlates to pre-determined mortality percentages
+          </div>
+          <div class="title">
+            Meld Score (MLD) = (9.57 x ln(Creatinine) + 3.78 x ln(bilirubin) + 11.20 x ln(INR) + 6.43) * 10
+          </div>
+          <div class="title">
+            If MLD > 11, then Meld Score = MLD + 1.32 x (137 - Sodium) - [0.033 x MLD x (137 - Sodium)]
+          </div>
+          <div class="second">
+            Use 1.0 for Bilirubin, Creatinine, and/or INR effective measure if below 1.0
+          </div>
+          <div class="second">
+            Use 4.0 for Creatinine effective measure if > 4.0
+          </div>
+          <div class="second">
+            125 &lt; Effective Sodium &lt; 137
+          </div>
+          <div style="direction: ltr;">
+            <table style="direction: ltr; border-collapse: collapse; border: 1pt solid #A3A3A3;" title="" border="1" summary="" cellspacing="0" cellpadding="0">
+            <tbody>
+            <tr>
+            <td style="background-color: #f0f0f0; vertical-align: top; width: .9673in; padding: 4pt 4pt 4pt 4pt; border: 1pt solid #A3A3A3;">
+            <p style="margin-top: 3pt; margin-bottom: 3pt; font-family: Facit; font-size: 10.9pt; color: #2c2c2c;"><span style="font-weight: bold;">MELD Score</span></p>
+            </td>
+            <td style="background-color: #f0f0f0; vertical-align: top; width: .7326in; padding: 4pt 4pt 4pt 4pt; border: 1pt solid #A3A3A3;">
+            <p style="margin-top: 3pt; margin-bottom: 3pt; font-family: Facit; font-size: 10.9pt; color: #2c2c2c;"><span style="font-weight: bold;">Mortality</span></p>
+            </td>
+            </tr>
+            <tr>
+            <td style="background-color: #f0f0f0; vertical-align: top; width: .9479in; padding: 4pt 4pt 4pt 4pt; border: 1pt solid #A3A3A3;">
+            <p style="margin-top: 3pt; margin-bottom: 3pt; font-family: Facit; font-size: 10.9pt; color: #2c2c2c;">&le;9</p>
+            </td>
+            <td style="background-color: #f0f0f0; vertical-align: top; width: .6826in; padding: 4pt 4pt 4pt 4pt; border: 1pt solid #A3A3A3;">
+            <p style="margin-top: 3pt; margin-bottom: 3pt; font-family: Facit; font-size: 10.9pt; color: #2c2c2c;">1.9%</p>
+            </td>
+            </tr>
+            <tr>
+            <td style="background-color: #f0f0f0; vertical-align: top; width: .9479in; padding: 4pt 4pt 4pt 4pt; border: 1pt solid #A3A3A3;">
+            <p style="margin-top: 3pt; margin-bottom: 3pt; font-family: Facit; font-size: 10.9pt; color: #2c2c2c;">10&ndash;19</p>
+            </td>
+            <td style="background-color: #f0f0f0; vertical-align: top; width: .6826in; padding: 4pt 4pt 4pt 4pt; border: 1pt solid #A3A3A3;">
+            <p style="margin-top: 3pt; margin-bottom: 3pt; font-family: Facit; font-size: 10.9pt; color: #2c2c2c;">6.0%</p>
+            </td>
+            </tr>
+            <tr>
+            <td style="background-color: #f0f0f0; vertical-align: top; width: .9479in; padding: 4pt 4pt 4pt 4pt; border: 1pt solid #A3A3A3;">
+            <p style="margin-top: 3pt; margin-bottom: 3pt; font-family: Facit; font-size: 10.9pt; color: #2c2c2c;">20&ndash;29</p>
+            </td>
+            <td style="background-color: #f0f0f0; vertical-align: top; width: .6826in; padding: 4pt 4pt 4pt 4pt; border: 1pt solid #A3A3A3;">
+            <p style="margin-top: 3pt; margin-bottom: 3pt; font-family: Facit; font-size: 10.9pt; color: #2c2c2c;">19.6%</p>
+            </td>
+            </tr>
+            <tr>
+            <td style="background-color: #f0f0f0; vertical-align: top; width: .9479in; padding: 4pt 4pt 4pt 4pt; border: 1pt solid #A3A3A3;">
+            <p style="margin-top: 3pt; margin-bottom: 3pt; font-family: Facit; font-size: 10.9pt; color: #2c2c2c;">30&ndash;39</p>
+            </td>
+            <td style="background-color: #f0f0f0; vertical-align: top; width: .6826in; padding: 4pt 4pt 4pt 4pt; border: 1pt solid #A3A3A3;">
+            <p style="margin-top: 3pt; margin-bottom: 3pt; font-family: Facit; font-size: 10.9pt; color: #2c2c2c;">52.6%</p>
+            </td>
+            </tr>
+            <tr>
+            <td style="background-color: #f0f0f0; vertical-align: top; width: .9479in; padding: 4pt 4pt 4pt 4pt; border: 1pt solid #A3A3A3;">
+            <p style="margin-top: 3pt; margin-bottom: 3pt; font-family: Facit; font-size: 10.9pt; color: #2c2c2c;">&ge;40</p>
+            </td>
+            <td style="background-color: #f0f0f0; vertical-align: top; width: .6826in; padding: 4pt 4pt 4pt 4pt; border: 1pt solid #A3A3A3;">
+            <p style="margin-top: 3pt; margin-bottom: 3pt; font-family: Facit; font-size: 10.9pt; color: #2c2c2c;">71.3%</p>
+            </td>
+            </tr>
+            </tbody>
+            </table>
+            </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src='./lib/js/fhir-client.js'></script>
+  <script src="./lib/js/get-data.js"></script>
+
+  <!-- uncomment below script and comment above script to switch for easy local testing -->
+  <!-- <script src="./lib/js/get-data-test.js"></script> -->
+</body>
+
+</html>
